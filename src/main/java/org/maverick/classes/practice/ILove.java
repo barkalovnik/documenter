@@ -1,4 +1,4 @@
-package org.maverick;
+package org.maverick.classes.practice;
 
 public class ILove {
   public static void main(String[] args) {

@@ -1,3 +1,5 @@
+package org.maverick;
+
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,6 +15,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -97,7 +100,7 @@ public class ClassDocumenter {
         }
         documented.clear();
         external.clear();
-        collect(root, true);            // 1-й проход: рекурсивный сбор классов
+        collect(root, true);      // 1-й проход: рекурсивный сбор классов
         return render(root);            // 2-й проход: генерация HTML
     }
 
@@ -113,12 +116,9 @@ public class ClassDocumenter {
     }
 
     private void writeFile(String fileName, String html) throws IOException {
-        Writer w = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(fileName), "UTF-8"));
-        try {
+        try (Writer w = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(fileName), StandardCharsets.UTF_8))) {
             w.write(html);
-        } finally {
-            w.close();
         }
     }
 
@@ -197,9 +197,7 @@ public class ClassDocumenter {
             }
         }
 
-        for (Class<?> nested : c.getDeclaredClasses()) {
-            result.add(nested);
-        }
+        Collections.addAll(result, c.getDeclaredClasses());
         return result;
     }
 
@@ -587,7 +585,7 @@ public class ClassDocumenter {
 
     private String modifiers(int mod) {
         String s = Modifier.toString(mod);
-        return s.length() == 0 ? "(package-private)" : s;
+        return s.isEmpty() ? "(package-private)" : s;
     }
 
     private String anchor(Class<?> c) {
@@ -624,20 +622,40 @@ public class ClassDocumenter {
     }
 
     private String css() {
-        return ""
-            + "body{font-family:Segoe UI,Arial,sans-serif;margin:24px;background:#f5f6f8;color:#1c1e21;}\n"
-            + "h1{font-size:22px;} h2{font-size:18px;margin:0 0 10px;} h3{font-size:14px;margin:16px 0 6px;color:#374151;}\n"
-            + ".card{background:#fff;border:1px solid #d9dde3;border-radius:8px;padding:16px 18px;margin:14px 0;}\n"
-            + "table{border-collapse:collapse;width:100%;font-size:13px;margin-bottom:6px;}\n"
-            + "td,th{border:1px solid #e2e5ea;padding:5px 8px;text-align:left;vertical-align:top;}\n"
-            + "table.grid th{background:#eef1f5;}\n"
-            + ".name{font-family:Consolas,monospace;}\n"
-            + ".meta{color:#6b7280;font-size:12px;}\n"
-            + ".descr{margin:0 0 10px;font-style:italic;color:#374151;}\n"
-            + ".kind{color:#6b7280;font-size:12px;}\n"
-            + ".badge{background:#2563eb;color:#fff;font-size:11px;border-radius:4px;padding:2px 6px;}\n"
-            + ".toc{columns:2;font-size:13px;} a{color:#1d4ed8;text-decoration:none;} a:hover{text-decoration:underline;}\n"
-            + "code{background:#eef1f5;border-radius:3px;padding:1px 4px;font-size:12px;}\n";
+        return """
+                body{font-family:Segoe UI,Arial,sans-serif;margin:24px;background:#f5f6f8;color:#1c1e21;}
+                h1{font-size:22px;} h2{font-size:18px;margin:0 0 10px;} h3{font-size:14px;margin:16px 0 6px;color:#374151;}
+                .card{background:#fff;border:1px solid #d9dde3;border-radius:8px;padding:16px 18px;margin:14px 0;}
+                table{border-collapse:collapse;width:100%;font-size:13px;margin-bottom:6px;}
+                td,th{border:1px solid #e2e5ea;padding:5px 8px;text-align:left;vertical-align:top;}
+                table.grid th{background:#eef1f5;}
+                .name{font-family:Consolas,monospace;}
+                .meta{color:#6b7280;font-size:12px;}
+                .descr{margin:0 0 10px;font-style:italic;color:#374151;}
+                .kind{color:#6b7280;font-size:12px;}
+                .badge{background:#2563eb;color:#fff;font-size:11px;border-radius:4px;padding:2px 6px;}
+                .toc{columns:2;font-size:13px;} a{color:#1d4ed8;text-decoration:none;} a:hover{text-decoration:underline;}
+                code{background:#eef1f5;border-radius:3px;padding:1px 4px;font-size:12px;}
+                """;
+    }
+
+    /** Вторая css-стратегия - пошлые пастельные цвета: оранжевый, зеленый, розовый */
+    private String css2() {
+        return """
+                body{font-family:Segoe UI,Arial,sans-serif;margin:24px;background:#FFCB73;color:#7D0057;}
+                h1{font-size:22px;} h2{font-size:18px;margin:0 0 10px;} h3{font-size:14px;margin:16px 0 6px;color:#374151;}
+                .card{background:#FFB840;border:1px solid #BF8A30;border-radius:0px;padding:16px 18px;margin:14px 0;}
+                table{border-collapse:collapse;width:100%;font-size:13px;margin-bottom:6px;}
+                td,th{border:1px solid #BF8A30;padding:5px 8px;text-align:left;vertical-align:top;}
+                table.grid th{background:#E065BB;}
+                .name{font-family:Consolas,monospace;}
+                .meta{color:#912470;font-size:12px;}
+                .descr{margin:0 0 10px;font-style:italic;color:#374151;}
+                .kind{color:#912470;font-size:12px;}
+                .badge{background:#91B52D;color:#fff;font-size:11px;border-radius:0px;padding:2px 6px;}
+                .toc{columns:2;font-size:13px;} a{color:#739D00;text-decoration:none;} a:hover{text-decoration:underline;}
+                code{background:#eef1f5;border-radius:3px;padding:1px 4px;font-size:12px;}
+                """;
     }
 
     // ------------------------------------------------------------------ запуск из командной строки

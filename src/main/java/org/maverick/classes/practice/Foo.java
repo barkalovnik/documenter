@@ -1,4 +1,4 @@
-package org.maverick;
+package org.maverick.classes.practice;
 public class Foo {
   private int x;
   private int y;

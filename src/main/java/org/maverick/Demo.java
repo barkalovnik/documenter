@@ -1,26 +1,30 @@
+package org.maverick;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.maverick.classes.practice.*;
+
 /** Демонстрация работы документатора на модели с циклическими ссылками. */
 public class Demo {
 
-    public static void main(String[] args) throws Exception {
+    static void main(String[] args) throws Exception {
         ClassDocumenter documenter = new ClassDocumenter()
                 .setIncludeJdkClasses(false)
                 .setFollowMethodSignatures(true);
 
         // вариант 1: по описателю класса
-        documenter.documentToFile(Person.class, "Person.html");
+        documenter.documentToFile(Pokemon.class, "Pokemon.html");
 
         // вариант 2: по имени класса
-        documenter.documentToFile("Order", "Order.html");
+//        documenter.documentToFile("Order", "Order.html");
 
         // вариант 3: по произвольному объекту
-        String html = documenter.documentObject(new Person());
-        System.out.println("Размер документа для объекта Person: " + html.length() + " символов");
+//        String html = documenter.documentObject(new Person());
+//        System.out.println("Размер документа для объекта Person: " + html.length() + " символов");
 
-        System.out.println("Готово: Person.html, Order.html");
+//        System.out.println("Готово: Person.html, Order.html");
     }
 }
 
