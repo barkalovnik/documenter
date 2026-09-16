@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Описание структуры класса Person</title>
+<style>
+body{font-family:Segoe UI,Arial,sans-serif;margin:24px;background:#f5f6f8;color:#1c1e21;}
+h1{font-size:22px;} h2{font-size:18px;margin:0 0 10px;} h3{font-size:14px;margin:16px 0 6px;color:#374151;}
+.card{background:#fff;border:1px solid #d9dde3;border-radius:8px;padding:16px 18px;margin:14px 0;}
+table{border-collapse:collapse;width:100%;font-size:13px;margin-bottom:6px;}
+td,th{border:1px solid #e2e5ea;padding:5px 8px;text-align:left;vertical-align:top;}
+table.grid th{background:#eef1f5;}
+.name{font-family:Consolas,monospace;}
+.meta{color:#6b7280;font-size:12px;}
+.descr{margin:0 0 10px;font-style:italic;color:#374151;}
+.kind{color:#6b7280;font-size:12px;}
+.badge{background:#2563eb;color:#fff;font-size:11px;border-radius:4px;padding:2px 6px;}
+.toc{columns:2;font-size:13px;} a{color:#1d4ed8;text-decoration:none;} a:hover{text-decoration:underline;}
+code{background:#eef1f5;border-radius:3px;padding:1px 4px;font-size:12px;}
+</style>
+</head>
+<body>
+<h1>Описание структуры класса Person</h1>
+<p class="meta">Сгенерировано: 16.09.2026 12:23:31 &middot; классов в документе: 6</p>
+<div class="card"><h2>Содержание</h2>
+<ol class="toc">
+<li><a href="#Person">Person</a> <span class="kind">класс</span></li>
+<li><a href="#Address">Address</a> <span class="kind">класс</span></li>
+<li><a href="#Order">Order</a> <span class="kind">класс</span></li>
+<li><a href="#Product">Product</a> <span class="kind">класс</span></li>
+<li><a href="#Category">Category</a> <span class="kind">класс</span></li>
+<li><a href="#Status">Status</a> <span class="kind">перечисление</span></li>
+</ol></div>
+<div class="card" id="Person">
+<h2>класс Person <span class="badge">корневой класс</span></h2>
+<p class="descr">Физическое лицо: покупатель или контакт</p>
+<table>
+<tr><th>Пакет</th><td>(пакет по умолчанию)</td></tr>
+<tr><th>Модификаторы</th><td>(package-private)</td></tr>
+<tr><th>Суперкласс</th><td>java.lang.Object</td></tr>
+<tr><th>Аннотации</th><td><code>@DocInfo</code></td></tr>
+<tr><th>Версия</th><td>1.0</td></tr>
+</table>
+<h3>Поля</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Тип</th><th>Имя</th><th>Аннотации</th><th>Описание</th></tr>
+<tr><td>private</td><td>java.lang.String</td><td class="name">name</td><td><code>@DocInfo</code></td><td>Имя и фамилия</td></tr>
+<tr><td>private</td><td><a href="#Address" title="Address">Address</a></td><td class="name">address</td><td><code>@DocInfo</code></td><td>Адрес регистрации</td></tr>
+<tr><td>private</td><td><a href="#Address" title="Address">Address</a>[]</td><td class="name">deliveryAddresses</td><td><code>@DocInfo</code></td><td>Адреса доставки — массив ссылок</td></tr>
+<tr><td>private</td><td><a href="#Person" title="Person">Person</a>[]</td><td class="name">friends</td><td><code>@DocInfo</code></td><td>Друзья — циклическая ссылка на собственный класс</td></tr>
+<tr><td>private</td><td>java.util.List&lt;<a href="#Order" title="Order">Order</a>&gt;</td><td class="name">orders</td><td><code>@DocInfo</code></td><td>Заказы клиента</td></tr>
+<tr><td>private</td><td>java.util.Map&lt;java.lang.String, java.lang.Object&gt;</td><td class="name">attributes</td><td><code>@DocInfo</code></td><td>Служебные данные</td></tr>
+<tr><td>private</td><td>java.util.Date</td><td class="name">registeredAt</td><td></td><td></td></tr>
+</table>
+<h3>Конструкторы</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Параметры</th><th>Исключения</th><th>Аннотации</th></tr>
+<tr><td>public</td><td><span class="meta">()</span></td><td></td><td></td></tr>
+<tr><td>public</td><td>java.lang.String, <a href="#Address" title="Address">Address</a></td><td></td><td></td></tr>
+</table>
+<h3>Методы</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Тип результата</th><th>Имя</th><th>Параметры</th><th>Исключения</th><th>Аннотации</th><th>Описание</th></tr>
+<tr><td>public</td><td><a href="#Address" title="Address">Address</a></td><td class="name">getAddress</td><td><span class="meta">()</span></td><td></td><td></td><td></td></tr>
+<tr><td>public</td><td>void</td><td class="name">addOrder</td><td><a href="#Order" title="Order">Order</a></td><td></td><td><code>@DocInfo</code></td><td>Добавляет заказ клиенту</td></tr>
+</table>
+<h3>Ссылки на другие классы документа</h3>
+<p><a href="#Address">Address</a>, <a href="#Order">Order</a></p>
+</div>
+<div class="card" id="Address">
+<h2>класс Address</h2>
+<p class="descr">Почтовый адрес</p>
+<table>
+<tr><th>Пакет</th><td>(пакет по умолчанию)</td></tr>
+<tr><th>Модификаторы</th><td>(package-private)</td></tr>
+<tr><th>Суперкласс</th><td>java.lang.Object</td></tr>
+<tr><th>Аннотации</th><td><code>@DocInfo</code></td></tr>
+<tr><th>Автор</th><td>Иванов И.И.</td></tr>
+<tr><th>Версия</th><td>1.0</td></tr>
+</table>
+<h3>Поля</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Тип</th><th>Имя</th><th>Аннотации</th><th>Описание</th></tr>
+<tr><td>private</td><td>java.lang.String</td><td class="name">country</td><td><code>@DocInfo</code></td><td>Страна</td></tr>
+<tr><td>private</td><td>java.lang.String</td><td class="name">city</td><td><code>@DocInfo</code></td><td>Город</td></tr>
+<tr><td>private</td><td>int</td><td class="name">zip</td><td><code>@DocInfo</code></td><td>Индекс</td></tr>
+</table>
+<h3>Конструкторы</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Параметры</th><th>Исключения</th><th>Аннотации</th></tr>
+<tr><td>(package-private)</td><td><span class="meta">()</span></td><td></td><td></td></tr>
+</table>
+<h3>Методы</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Тип результата</th><th>Имя</th><th>Параметры</th><th>Исключения</th><th>Аннотации</th><th>Описание</th></tr>
+<tr><td>public</td><td>java.lang.String</td><td class="name">getCity</td><td><span class="meta">()</span></td><td></td><td></td><td></td></tr>
+</table>
+<h3>Ссылки на другие классы документа</h3>
+<p class="meta">нет</p>
+</div>
+<div class="card" id="Order">
+<h2>класс Order</h2>
+<p class="descr">Заказ в интернет-магазине</p>
+<table>
+<tr><th>Пакет</th><td>(пакет по умолчанию)</td></tr>
+<tr><th>Модификаторы</th><td>(package-private)</td></tr>
+<tr><th>Суперкласс</th><td>java.lang.Object</td></tr>
+<tr><th>Аннотации</th><td><code>@DocInfo</code></td></tr>
+</table>
+<h3>Поля</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Тип</th><th>Имя</th><th>Аннотации</th><th>Описание</th></tr>
+<tr><td>private</td><td><a href="#Person" title="Person">Person</a></td><td class="name">customer</td><td><code>@DocInfo</code></td><td>Клиент — обратная ссылка</td></tr>
+<tr><td>private</td><td><a href="#Product" title="Product">Product</a>[]</td><td class="name">items</td><td><code>@DocInfo</code></td><td>Позиции заказа — массив ссылок</td></tr>
+<tr><td>private</td><td><a href="#Status" title="Status">Status</a></td><td class="name">status</td><td></td><td></td></tr>
+<tr><td>private</td><td><a href="#Address" title="Address">Address</a></td><td class="name">shipTo</td><td></td><td></td></tr>
+<tr><td>private</td><td>double</td><td class="name">total</td><td></td><td></td></tr>
+</table>
+<h3>Конструкторы</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Параметры</th><th>Исключения</th><th>Аннотации</th></tr>
+<tr><td>(package-private)</td><td><span class="meta">()</span></td><td></td><td></td></tr>
+</table>
+<h3>Методы</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Тип результата</th><th>Имя</th><th>Параметры</th><th>Исключения</th><th>Аннотации</th><th>Описание</th></tr>
+<tr><td>public</td><td>double</td><td class="name">recalculate</td><td><span class="meta">()</span></td><td>java.lang.IllegalStateException</td><td><code>@DocInfo</code></td><td>Пересчитывает сумму заказа</td></tr>
+</table>
+<h3>Ссылки на другие классы документа</h3>
+<p><a href="#Person">Person</a>, <a href="#Product">Product</a>, <a href="#Status">Status</a>, <a href="#Address">Address</a></p>
+</div>
+<div class="card" id="Product">
+<h2>класс Product</h2>
+<p class="descr">Товарная позиция</p>
+<table>
+<tr><th>Пакет</th><td>(пакет по умолчанию)</td></tr>
+<tr><th>Модификаторы</th><td>(package-private)</td></tr>
+<tr><th>Суперкласс</th><td>java.lang.Object</td></tr>
+<tr><th>Аннотации</th><td><code>@DocInfo</code></td></tr>
+</table>
+<h3>Поля</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Тип</th><th>Имя</th><th>Аннотации</th><th>Описание</th></tr>
+<tr><td>private</td><td>java.lang.String</td><td class="name">title</td><td></td><td></td></tr>
+<tr><td>private</td><td>double</td><td class="name">price</td><td></td><td></td></tr>
+<tr><td>private</td><td><a href="#Category" title="Category">Category</a></td><td class="name">category</td><td></td><td></td></tr>
+</table>
+<h3>Конструкторы</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Параметры</th><th>Исключения</th><th>Аннотации</th></tr>
+<tr><td>(package-private)</td><td><span class="meta">()</span></td><td></td><td></td></tr>
+</table>
+<h3>Методы</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Тип результата</th><th>Имя</th><th>Параметры</th><th>Исключения</th><th>Аннотации</th><th>Описание</th></tr>
+<tr><td>public</td><td><a href="#Category" title="Category">Category</a></td><td class="name">getCategory</td><td><span class="meta">()</span></td><td></td><td></td><td></td></tr>
+</table>
+<h3>Ссылки на другие классы документа</h3>
+<p><a href="#Category">Category</a></p>
+</div>
+<div class="card" id="Category">
+<h2>класс Category</h2>
+<p class="descr">Категория товара, дерево категорий</p>
+<table>
+<tr><th>Пакет</th><td>(пакет по умолчанию)</td></tr>
+<tr><th>Модификаторы</th><td>(package-private)</td></tr>
+<tr><th>Суперкласс</th><td>java.lang.Object</td></tr>
+<tr><th>Аннотации</th><td><code>@DocInfo</code></td></tr>
+</table>
+<h3>Поля</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Тип</th><th>Имя</th><th>Аннотации</th><th>Описание</th></tr>
+<tr><td>private</td><td>java.lang.String</td><td class="name">name</td><td></td><td></td></tr>
+<tr><td>private</td><td><a href="#Category" title="Category">Category</a></td><td class="name">parent</td><td></td><td></td></tr>
+<tr><td>private</td><td><a href="#Category" title="Category">Category</a>[]</td><td class="name">children</td><td></td><td></td></tr>
+</table>
+<h3>Конструкторы</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Параметры</th><th>Исключения</th><th>Аннотации</th></tr>
+<tr><td>(package-private)</td><td><span class="meta">()</span></td><td></td><td></td></tr>
+</table>
+<h3>Методы</h3>
+<p class="meta">нет</p>
+<h3>Ссылки на другие классы документа</h3>
+<p class="meta">нет</p>
+</div>
+<div class="card" id="Status">
+<h2>перечисление Status</h2>
+<table>
+<tr><th>Пакет</th><td>(пакет по умолчанию)</td></tr>
+<tr><th>Модификаторы</th><td>final</td></tr>
+<tr><th>Суперкласс</th><td>java.lang.Enum&lt;<a href="#Status" title="Status">Status</a>&gt;</td></tr>
+</table>
+<h3>Константы перечисления</h3>
+<p>NEW, PAID, SHIPPED, CANCELLED</p>
+<h3>Поля</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Тип</th><th>Имя</th><th>Аннотации</th><th>Описание</th></tr>
+<tr><td>public static final</td><td><a href="#Status" title="Status">Status</a></td><td class="name">NEW</td><td></td><td></td></tr>
+<tr><td>public static final</td><td><a href="#Status" title="Status">Status</a></td><td class="name">PAID</td><td></td><td></td></tr>
+<tr><td>public static final</td><td><a href="#Status" title="Status">Status</a></td><td class="name">SHIPPED</td><td></td><td></td></tr>
+<tr><td>public static final</td><td><a href="#Status" title="Status">Status</a></td><td class="name">CANCELLED</td><td></td><td></td></tr>
+</table>
+<h3>Конструкторы</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Параметры</th><th>Исключения</th><th>Аннотации</th></tr>
+<tr><td>private</td><td><span class="meta">()</span></td><td></td><td></td></tr>
+</table>
+<h3>Методы</h3>
+<table class="grid">
+<tr><th>Модификаторы</th><th>Тип результата</th><th>Имя</th><th>Параметры</th><th>Исключения</th><th>Аннотации</th><th>Описание</th></tr>
+<tr><td>public static</td><td><a href="#Status" title="Status">Status</a>[]</td><td class="name">values</td><td><span class="meta">()</span></td><td></td><td></td><td></td></tr>
+<tr><td>public static</td><td><a href="#Status" title="Status">Status</a></td><td class="name">valueOf</td><td>java.lang.String</td><td></td><td></td><td></td></tr>
+</table>
+<h3>Ссылки на другие классы документа</h3>
+<p class="meta">нет</p>
+</div>
+<div class="card"><h2>Внешние типы (не разбирались)</h2>
+<p class="meta">java.lang.Enum, java.lang.Object, java.lang.String, java.util.Date, java.util.List</p></div>
+</body>
+</html>
