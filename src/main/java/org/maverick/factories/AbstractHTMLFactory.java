@@ -1,5 +1,6 @@
 package org.maverick.factories;
 
+import org.maverick.ClassRenderRecord;
 import org.maverick.DocIgnore;
 import org.maverick.DocInfo;
 
@@ -16,7 +17,7 @@ public abstract class AbstractHTMLFactory implements IDocumentFactory {
      * @return возвращает готовый текст html
      */
     public abstract String render(Class<?> root,
-                                  LinkedHashSet<Class<?>> documented,
+                                  LinkedHashSet<ClassRenderRecord> documented,
                                   Set<Class<?>> external);
 
     /** Режет злые знаки, которые могут сломать html
@@ -132,46 +133,6 @@ public abstract class AbstractHTMLFactory implements IDocumentFactory {
 
     /* ЭТИ МЕТОДЫ НАХУЙ СКОПИРОВАНЫ ИЗ CLASSDOCUMENTER ПОТОМУ ЧТО НАДО ПЕРЕПРОДУМАТЬ АРХИТЕКТУРУ И ЕБАНУТЬ ЧТО-ТО
     * ПОКУЛЬТУРНЕЙ СУКА НАХУЙ */
-
-    /** Все типы, на которые ссылается класс: предок, интерфейсы, поля, сигнатуры, вложенные типы. */
-    protected List<Type> referencedTypes(Class<?> c, boolean showSynthetic, boolean fms) {
-        List<Type> result = new ArrayList<Type>();
-
-        if (c.getGenericSuperclass() != null) {
-            result.add(c.getGenericSuperclass());
-        }
-        Collections.addAll(result, c.getGenericInterfaces());
-
-        for (Field f : c.getDeclaredFields()) {
-            if (skipMember(f.getModifiers(), f.isSynthetic(), f.getAnnotations(), showSynthetic)) {
-                continue;
-            }
-            DocInfo fi = f.getAnnotation(DocInfo.class);
-            if (fi != null && !fi.deep()) {
-                continue;               // поле показываем, но вглубь не идём
-            }
-            result.add(f.getGenericType());
-        }
-
-        if (fms) {
-            for (Constructor<?> ct : c.getDeclaredConstructors()) {
-                if (skipMember(ct.getModifiers(), ct.isSynthetic(), ct.getAnnotations(), showSynthetic)) {
-                    continue;
-                }
-                Collections.addAll(result, ct.getGenericParameterTypes());
-            }
-            for (Method m : c.getDeclaredMethods()) {
-                if (skipMember(m.getModifiers(), m.isSynthetic(), m.getAnnotations(), showSynthetic)) {
-                    continue;
-                }
-                result.add(m.getGenericReturnType());
-                Collections.addAll(result, m.getGenericParameterTypes());
-            }
-        }
-
-        Collections.addAll(result, c.getDeclaredClasses());
-        return result;
-    }
 
     /** Разворачивание сложного типа (дженерики, массивы, wildcard) в набор классов. */
     protected Set<Class<?>> classesOf(Type t) {

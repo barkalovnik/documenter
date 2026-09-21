@@ -1,5 +1,6 @@
 package org.maverick.factories;
 
+import org.maverick.ClassRenderRecord;
 import org.maverick.DocInfo;
 
 import java.lang.annotation.Annotation;
@@ -18,7 +19,7 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
      */
     @Override
     public String render(Class<?> root,
-                         LinkedHashSet<Class<?>> documented,
+                         LinkedHashSet<ClassRenderRecord> documented,
                          Set<Class<?>> external) {
         StringBuilder sb = new StringBuilder(64 * 1024);
         String title = "Описание структуры класса " + root.getName();
@@ -36,8 +37,8 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
                 .append("</p>\n");
 
         renderToc(sb, documented);
-        for (Class<?> c : documented) {
-            renderClass(sb, c, c == root, showSynthetic);
+        for (ClassRenderRecord c : documented) {
+            renderClass(sb, c.theClass(), c.theClass() == root);
         }
         renderExternal(sb, external);
 
@@ -71,12 +72,12 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
      * Table of Content
      * @param sb
      */
-    private void renderToc(StringBuilder sb, LinkedHashSet<Class<?>> documented) {
+    private void renderToc(StringBuilder sb, LinkedHashSet<ClassRenderRecord> documented) {
         sb.append("<div class=\"card\"><h2>Содержание</h2>\n<ol class=\"toc\">\n");
-        for (Class<?> c : documented) {
-            sb.append("<li><a href=\"#").append(anchor(c)).append("\">")
-                    .append(escape(c.getName())).append("</a> <span class=\"kind\">")
-                    .append(kindOf(c)).append("</span></li>\n");
+        for (ClassRenderRecord c : documented) {
+            sb.append("<li><a href=\"#").append(anchor(c.theClass())).append("\">")
+                    .append(escape(c.theClass().getName())).append("</a> <span class=\"kind\">")
+                    .append(kindOf(c.theClass())).append("</span></li>\n");
         }
         sb.append("</ol></div>\n");
     }
@@ -94,7 +95,7 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
                 .append(escape(join(names, ", "))).append("</p></div>\n");
     }
 
-    private void renderClass(StringBuilder sb, Class<?> c, boolean isRoot, boolean showSynthetic) {
+    private void renderClass(StringBuilder sb, Class<?> c, boolean isRoot) {
         sb.append("<div class=\"card\" id=\"").append(anchor(c)).append("\">\n");
         sb.append("<h2>").append(kindOf(c)).append(" ").append(escape(c.getName()));
         if (isRoot) {
@@ -110,7 +111,7 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
         // --- общие сведения
         sb.append("<table>\n");
         String pkg = (c.getPackage() == null) ? "" : c.getPackage().getName();
-        row(sb, "Пакет", escape(pkg.length() == 0 ? "(пакет по умолчанию)" : pkg));
+        row(sb, "Пакет", escape(pkg.isEmpty() ? "(пакет по умолчанию)" : pkg));
         row(sb, "Модификаторы", escape(modifiers(c.getModifiers())));
         if (c.getGenericSuperclass() != null) {
             row(sb, "Суперкласс", typeHtml(c.getGenericSuperclass()));
@@ -130,10 +131,10 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
         if (ann.length > 0) {
             row(sb, "Аннотации", annotationsHtml(ann));
         }
-        if (info != null && info.author().length() > 0) {
+        if (info != null && !info.author().isEmpty()) {
             row(sb, "Автор", escape(info.author()));
         }
-        if (info != null && info.since().length() > 0) {
+        if (info != null && !info.since().isEmpty()) {
             row(sb, "Версия", escape(info.since()));
         }
         sb.append("</table>\n");
@@ -141,9 +142,9 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
         if (c.isEnum()) {
             renderEnumConstants(sb, c);
         }
-        renderFields(sb, c, showSynthetic);
-        renderConstructors(sb, c, showSynthetic);
-        renderMethods(sb, c, showSynthetic);
+        renderFields(sb, c);
+        renderConstructors(sb, c);
+        renderMethods(sb, c);
         renderReferences(sb, c);
 
         sb.append("</div>\n");
@@ -162,8 +163,8 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
                 .append(join(names, ", ")).append("</p>\n");
     }
 
-    private void renderFields(StringBuilder sb, Class<?> c, boolean showSyntheticMethods) {
-        Field[] fields = c.getDeclaredFields();
+    private void renderFields(StringBuilder sb, ClassRenderRecord c) {
+        Field[] fields = c.fields();
         sb.append("<h3>Поля</h3>\n");
         if (fields.length == 0) {
             sb.append("<p class=\"meta\">нет</p>\n");
@@ -173,9 +174,6 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
                 + "<th>Имя</th><th>Аннотации</th><th>Описание</th></tr>\n");
         int shown = 0;
         for (Field f : fields) {
-            if (skipMember(f.getModifiers(), f.isSynthetic(), f.getAnnotations(), showSyntheticMethods)) {
-                continue;
-            }
             shown++;
             DocInfo fi = f.getAnnotation(DocInfo.class);
             sb.append("<tr><td>").append(escape(modifiers(f.getModifiers())))

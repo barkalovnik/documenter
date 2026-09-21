@@ -47,6 +47,7 @@ public class ClassDocumenter {
 
     /** Уже просмотренные (и документируемые) классы — защита от повторной обработки. */
     private final LinkedHashSet<Class<?>> documented = new LinkedHashSet<Class<?>>();
+    private final LinkedHashSet<ClassRenderRecord> documenterForRender = new LinkedHashSet<ClassRenderRecord>();
 
     /** Классы, которые встретились как ссылки, но не документируются (JDK и т.п.). */
     private final Set<Class<?>> external = new LinkedHashSet<Class<?>>();
