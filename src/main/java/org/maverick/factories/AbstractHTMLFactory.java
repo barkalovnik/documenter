@@ -93,28 +93,6 @@ public abstract class AbstractHTMLFactory implements IDocumentFactory {
                 .append(value).append("</td></tr>\n");
     }
 
-    /**
-     *
-     * @param modifiers
-     * @param synthetic
-     * @param annotations
-     * @return
-     */
-    protected boolean skipMember(int modifiers,
-                                 boolean synthetic,
-                                 Annotation[] annotations,
-                                 boolean showSyntheticMembers) {
-        if (synthetic && !showSyntheticMembers) {
-            return true;
-        }
-        for (Annotation a : annotations) {
-            if (a.annotationType() == DocIgnore.class) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     protected String annotationsHtml(Annotation[] annotations) {
         if (annotations.length == 0) {
             return "";

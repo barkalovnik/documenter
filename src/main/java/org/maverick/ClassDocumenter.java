@@ -1,8 +1,7 @@
 package org.maverick;
 
-import org.maverick.factories.AbstractHTMLFactory;
 import org.maverick.factories.IDocumentFactory;
-import org.maverick.factories.StandardHTMLFactory;
+import org.maverick.factories.PinkHTMLFactory;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
@@ -10,24 +9,9 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.lang.reflect.WildcardType;
+import java.lang.reflect.*;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Универсальный сервис-документатор.
@@ -47,12 +31,12 @@ public class ClassDocumenter {
 
     /** Уже просмотренные (и документируемые) классы — защита от повторной обработки. */
     private final LinkedHashSet<Class<?>> documented = new LinkedHashSet<Class<?>>();
-    private final LinkedHashSet<ClassRenderRecord> documenterForRender = new LinkedHashSet<ClassRenderRecord>();
+    private final LinkedHashSet<ClassRenderRecord> documentedForRender = new LinkedHashSet<ClassRenderRecord>();
 
     /** Классы, которые встретились как ссылки, но не документируются (JDK и т.п.). */
     private final Set<Class<?>> external = new LinkedHashSet<Class<?>>();
 
-    private IDocumentFactory factory = new StandardHTMLFactory();
+    private IDocumentFactory factory = new PinkHTMLFactory();
 
     private boolean includeJdkClasses = false;
     private boolean followMethodSignatures = true;
@@ -60,6 +44,12 @@ public class ClassDocumenter {
     private int maxClasses = 500;
 
     // ------------------------------------------------------------------ настройки
+
+    /** Установка используемой фабрики для создания HTML */
+    public ClassDocumenter setFactory(IDocumentFactory factory) {
+        this.factory = factory;
+        return this;
+    }
 
     /** Документировать ли классы стандартной библиотеки (по умолчанию нет). */
     public ClassDocumenter setIncludeJdkClasses(boolean value) {
@@ -216,31 +206,37 @@ public class ClassDocumenter {
     }
 
     private void classesOf(Type t, Set<Class<?>> out) {
-        if (t == null) {
-            return;
-        }
-        if (t instanceof Class) {
-            Class<?> c = unwrapArray((Class<?>) t);
-            if (c != null && !c.isPrimitive() && c != void.class) {
-                out.add(c);
+        switch (t) {
+            case null -> {
+                return;
             }
-        } else if (t instanceof ParameterizedType p) {
-            classesOf(p.getRawType(), out);
-            for (Type a : p.getActualTypeArguments()) {
-                classesOf(a, out);
+            case Class<?> aClass -> {
+                Class<?> c = unwrapArray(aClass);
+                if (c != null && !c.isPrimitive() && c != void.class) {
+                    out.add(c);
+                }
             }
-        } else if (t instanceof GenericArrayType) {
-            classesOf(((GenericArrayType) t).getGenericComponentType(), out);
-        } else if (t instanceof WildcardType w) {
-            for (Type b : w.getUpperBounds()) {
-                classesOf(b, out);
+            case ParameterizedType p -> {
+                classesOf(p.getRawType(), out);
+                for (Type a : p.getActualTypeArguments()) {
+                    classesOf(a, out);
+                }
             }
-            for (Type b : w.getLowerBounds()) {
-                classesOf(b, out);
+            case GenericArrayType genericArrayType -> classesOf(genericArrayType.getGenericComponentType(), out);
+            case WildcardType w -> {
+                for (Type b : w.getUpperBounds()) {
+                    classesOf(b, out);
+                }
+                for (Type b : w.getLowerBounds()) {
+                    classesOf(b, out);
+                }
             }
-        } else if (t instanceof TypeVariable) {
-            for (Type b : ((TypeVariable<?>) t).getBounds()) {
-                classesOf(b, out);
+            case TypeVariable<?> typeVariable -> {
+                for (Type b : typeVariable.getBounds()) {
+                    classesOf(b, out);
+                }
+            }
+            default -> {
             }
         }
     }
@@ -291,29 +287,37 @@ public class ClassDocumenter {
 
     // ------------------------------------------------------------------ 2-й проход: генерация HTML
 
-    private String render(Class<?> root) {
-        return factory.render(root, documented, external);
+    private void synchronizeDocumentedForRender() {
+        for (Class<?> ct : documented) {
+            ArrayList<Field> fields = new ArrayList<>(Arrays.asList(ct.getDeclaredFields()));
+            fields.removeIf(ctf ->
+                    skipMember(ctf.getModifiers(), ctf.isSynthetic(), ctf.getAnnotations())
+            );
+            ArrayList<Constructor<?>> ctors = new ArrayList<>(Arrays.asList(ct.getDeclaredConstructors()));
+            ctors.removeIf(ctc ->
+                    skipMember(ctc.getModifiers(), ctc.isSynthetic(), ctc.getAnnotations())
+            );
+            ArrayList<Method> methods = new ArrayList<>(Arrays.asList(ct.getDeclaredMethods()));
+            methods.removeIf(ctm ->
+                    skipMember(ctm.getModifiers(), ctm.isSynthetic(), ctm.getAnnotations())
+            );
+            if (!skipMember(ct.getModifiers(), ct.isSynthetic(), ct.getAnnotations())) {
+                documentedForRender.add(
+                        new ClassRenderRecord(
+                                ct,
+                                referencedTypes(ct),
+                                fields,
+                                ctors,
+                                methods
+                        )
+                );
+            }
+        }
     }
 
-    // ------------------------------------------------------------------ вспомогательные методы
-
-    /** Вторая css-стратегия - пошлые пастельные цвета: оранжевый, зеленый, розовый */
-    private String css2() {
-        return """
-                body{font-family:Segoe UI,Arial,sans-serif;margin:24px;background:#FFCB73;color:#7D0057;}
-                h1{font-size:22px;} h2{font-size:18px;margin:0 0 10px;} h3{font-size:14px;margin:16px 0 6px;color:#374151;}
-                .card{background:#FFB840;border:1px solid #BF8A30;border-radius:0px;padding:16px 18px;margin:14px 0;}
-                table{border-collapse:collapse;width:100%;font-size:13px;margin-bottom:6px;}
-                td,th{border:1px solid #BF8A30;padding:5px 8px;text-align:left;vertical-align:top;}
-                table.grid th{background:#E065BB;}
-                .name{font-family:Consolas,monospace;}
-                .meta{color:#912470;font-size:12px;}
-                .descr{margin:0 0 10px;font-style:italic;color:#374151;}
-                .kind{color:#912470;font-size:12px;}
-                .badge{background:#91B52D;color:#fff;font-size:11px;border-radius:0px;padding:2px 6px;}
-                .toc{columns:2;font-size:13px;} a{color:#739D00;text-decoration:none;} a:hover{text-decoration:underline;}
-                code{background:#eef1f5;border-radius:3px;padding:1px 4px;font-size:12px;}
-                """;
+    private String render(Class<?> root) {
+        synchronizeDocumentedForRender();
+        return factory.render(root, documentedForRender, external);
     }
 
     // ------------------------------------------------------------------ запуск из командной строки

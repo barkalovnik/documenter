@@ -6,4 +6,5 @@ module org.maverick.documentergui {
 
     opens org.maverick to javafx.fxml;
     exports org.maverick;
+    exports org.maverick.factories;
 }

@@ -1,5 +1,7 @@
 package org.maverick;
 
+import org.maverick.factories.IDocumentFactory;
+
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -201,7 +203,7 @@ public class DocumenterApp extends Application {
             return;
         }
         try {
-            Files.write(file.toPath(), lastHtml.getBytes(StandardCharsets.UTF_8));
+            Files.writeString(file.toPath(), lastHtml);
             statusLabel.setText("Сохранено: " + file.getAbsolutePath());
         } catch (IOException ex) {
             statusLabel.setText("Не удалось сохранить файл: " + ex.getMessage());

@@ -15,7 +15,7 @@ public class Demo {
                 .setFollowMethodSignatures(true);
 
         // вариант 1: по описателю класса
-        documenter.documentToFile(Pokemon.class, "Pokemon.html");
+        documenter.documentToFile(Pokemon.class, "Pokemon1.html");
 
         // вариант 2: по имени класса
 //        documenter.documentToFile("Order", "Order.html");

@@ -38,7 +38,7 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
 
         renderToc(sb, documented);
         for (ClassRenderRecord c : documented) {
-            renderClass(sb, c.theClass(), c.theClass() == root);
+            renderClass(sb, c, c.theClass() == root, documented);
         }
         renderExternal(sb, external);
 
@@ -70,7 +70,7 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
 
     /**
      * Table of Content
-     * @param sb
+     * @param sb Стрингбилдер с текущим собранным HTML
      */
     private void renderToc(StringBuilder sb, LinkedHashSet<ClassRenderRecord> documented) {
         sb.append("<div class=\"card\"><h2>Содержание</h2>\n<ol class=\"toc\">\n");
@@ -95,39 +95,40 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
                 .append(escape(join(names, ", "))).append("</p></div>\n");
     }
 
-    private void renderClass(StringBuilder sb, Class<?> c, boolean isRoot) {
-        sb.append("<div class=\"card\" id=\"").append(anchor(c)).append("\">\n");
-        sb.append("<h2>").append(kindOf(c)).append(" ").append(escape(c.getName()));
+    private void renderClass(StringBuilder sb, ClassRenderRecord crr, boolean isRoot,
+                             LinkedHashSet<ClassRenderRecord> documented) {
+        sb.append("<div class=\"card\" id=\"").append(anchor(crr.theClass())).append("\">\n");
+        sb.append("<h2>").append(kindOf(crr.theClass())).append(" ").append(escape(crr.theClass().getName()));
         if (isRoot) {
             sb.append(" <span class=\"badge\">корневой класс</span>");
         }
         sb.append("</h2>\n");
 
-        DocInfo info = c.getAnnotation(DocInfo.class);
+        DocInfo info = crr.theClass().getAnnotation(DocInfo.class);
         if (info != null && !info.value().isEmpty()) {
             sb.append("<p class=\"descr\">").append(escape(info.value())).append("</p>\n");
         }
 
         // --- общие сведения
         sb.append("<table>\n");
-        String pkg = (c.getPackage() == null) ? "" : c.getPackage().getName();
+        String pkg = (crr.theClass().getPackage() == null) ? "" : crr.theClass().getPackage().getName();
         row(sb, "Пакет", escape(pkg.isEmpty() ? "(пакет по умолчанию)" : pkg));
-        row(sb, "Модификаторы", escape(modifiers(c.getModifiers())));
-        if (c.getGenericSuperclass() != null) {
-            row(sb, "Суперкласс", typeHtml(c.getGenericSuperclass()));
+        row(sb, "Модификаторы", escape(modifiers(crr.theClass().getModifiers())));
+        if (crr.theClass().getGenericSuperclass() != null) {
+            row(sb, "Суперкласс", typeHtml(crr.theClass().getGenericSuperclass(), documented));
         }
-        Type[] ifaces = c.getGenericInterfaces();
+        Type[] ifaces = crr.theClass().getGenericInterfaces();
         if (ifaces.length > 0) {
-            row(sb, "Интерфейсы", typeList(ifaces));
+            row(sb, "Интерфейсы", typeList(ifaces, documented));
         }
-        if (c.getTypeParameters().length > 0) {
+        if (crr.theClass().getTypeParameters().length > 0) {
             List<String> tp = new ArrayList<String>();
-            for (TypeVariable<?> v : c.getTypeParameters()) {
+            for (TypeVariable<?> v : crr.theClass().getTypeParameters()) {
                 tp.add(escape(v.getName()));
             }
             row(sb, "Параметры типа", join(tp, ", "));
         }
-        Annotation[] ann = c.getAnnotations();
+        Annotation[] ann = crr.theClass().getAnnotations();
         if (ann.length > 0) {
             row(sb, "Аннотации", annotationsHtml(ann));
         }
@@ -139,13 +140,13 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
         }
         sb.append("</table>\n");
 
-        if (c.isEnum()) {
-            renderEnumConstants(sb, c);
+        if (crr.theClass().isEnum()) {
+            renderEnumConstants(sb, crr.theClass());
         }
-        renderFields(sb, c);
-        renderConstructors(sb, c);
-        renderMethods(sb, c);
-        renderReferences(sb, c);
+        renderFields(sb, crr, documented);
+        renderConstructors(sb, crr.ctors(), documented);
+        renderMethods(sb, crr.methods(), documented);
+        renderReferences(sb, crr, documented);
 
         sb.append("</div>\n");
     }
@@ -163,21 +164,24 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
                 .append(join(names, ", ")).append("</p>\n");
     }
 
-    private void renderFields(StringBuilder sb, ClassRenderRecord c) {
-        Field[] fields = c.fields();
+    private void renderFields(StringBuilder sb, ClassRenderRecord c, LinkedHashSet<ClassRenderRecord> documented) {
+        ArrayList<Field> fields = c.fields();
         sb.append("<h3>Поля</h3>\n");
-        if (fields.length == 0) {
+        if (fields.isEmpty()) {
             sb.append("<p class=\"meta\">нет</p>\n");
             return;
         }
-        sb.append("<table class=\"grid\">\n<tr><th>Модификаторы</th><th>Тип</th>"
-                + "<th>Имя</th><th>Аннотации</th><th>Описание</th></tr>\n");
+        sb.append("""
+                <table class="grid">
+                <tr><th>Модификаторы</th><th>Тип</th>\
+                <th>Имя</th><th>Аннотации</th><th>Описание</th></tr>
+                """);
         int shown = 0;
         for (Field f : fields) {
             shown++;
             DocInfo fi = f.getAnnotation(DocInfo.class);
             sb.append("<tr><td>").append(escape(modifiers(f.getModifiers())))
-                    .append("</td><td>").append(typeHtml(f.getGenericType()))
+                    .append("</td><td>").append(typeHtml(f.getGenericType(), documented))
                     .append("</td><td class=\"name\">").append(escape(f.getName()))
                     .append("</td><td>").append(annotationsHtml(f.getAnnotations()))
                     .append("</td><td>").append(fi == null ? "" : escape(fi.value()))
@@ -189,48 +193,48 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
         }
     }
 
-    private void renderConstructors(StringBuilder sb, Class<?> c, boolean showSyntheticMethods) {
-        Constructor<?>[] ctors = c.getDeclaredConstructors();
+    private void renderConstructors(StringBuilder sb, ArrayList<Constructor<?>> ctors,
+                                    LinkedHashSet<ClassRenderRecord> documented) {
         sb.append("<h3>Конструкторы</h3>\n");
-        if (ctors.length == 0) {
+        if (ctors.isEmpty()) {
             sb.append("<p class=\"meta\">нет</p>\n");
             return;
         }
-        sb.append("<table class=\"grid\">\n<tr><th>Модификаторы</th><th>Параметры</th>"
-                + "<th>Исключения</th><th>Аннотации</th></tr>\n");
+        sb.append("""
+                <table class="grid">
+                <tr><th>Модификаторы</th><th>Параметры</th>\
+                <th>Исключения</th><th>Аннотации</th></tr>
+                """);
         for (Constructor<?> ct : ctors) {
-            if (skipMember(ct.getModifiers(), ct.isSynthetic(), ct.getAnnotations(), showSyntheticMethods)) {
-                continue;
-            }
             sb.append("<tr><td>").append(escape(modifiers(ct.getModifiers())))
-                    .append("</td><td>").append(params(ct.getGenericParameterTypes()))
-                    .append("</td><td>").append(typeList(ct.getGenericExceptionTypes()))
+                    .append("</td><td>").append(params(ct.getGenericParameterTypes(), documented))
+                    .append("</td><td>").append(typeList(ct.getGenericExceptionTypes(), documented))
                     .append("</td><td>").append(annotationsHtml(ct.getAnnotations()))
                     .append("</td></tr>\n");
         }
         sb.append("</table>\n");
     }
 
-    private void renderMethods(StringBuilder sb, Class<?> c, boolean showSyntheticMethods) {
-        Method[] methods = c.getDeclaredMethods();
+    private void renderMethods(StringBuilder sb, ArrayList<Method> methods,
+                               LinkedHashSet<ClassRenderRecord> documented) {
         sb.append("<h3>Методы</h3>\n");
-        if (methods.length == 0) {
+        if (methods.isEmpty()) {
             sb.append("<p class=\"meta\">нет</p>\n");
             return;
         }
-        sb.append("<table class=\"grid\">\n<tr><th>Модификаторы</th><th>Тип результата</th>"
-                + "<th>Имя</th><th>Параметры</th><th>Исключения</th>"
-                + "<th>Аннотации</th><th>Описание</th></tr>\n");
+        sb.append("""
+                <table class="grid">
+                <tr><th>Модификаторы</th><th>Тип результата</th>\
+                <th>Имя</th><th>Параметры</th><th>Исключения</th>\
+                <th>Аннотации</th><th>Описание</th></tr>
+                """);
         for (Method m : methods) {
-            if (skipMember(m.getModifiers(), m.isSynthetic(), m.getAnnotations(), showSyntheticMethods)) {
-                continue;
-            }
             DocInfo mi = m.getAnnotation(DocInfo.class);
             sb.append("<tr><td>").append(escape(modifiers(m.getModifiers())))
-                    .append("</td><td>").append(typeHtml(m.getGenericReturnType()))
+                    .append("</td><td>").append(typeHtml(m.getGenericReturnType(), documented))
                     .append("</td><td class=\"name\">").append(escape(m.getName()))
-                    .append("</td><td>").append(params(m.getGenericParameterTypes()))
-                    .append("</td><td>").append(typeList(m.getGenericExceptionTypes()))
+                    .append("</td><td>").append(params(m.getGenericParameterTypes(), documented))
+                    .append("</td><td>").append(typeList(m.getGenericExceptionTypes(), documented))
                     .append("</td><td>").append(annotationsHtml(m.getAnnotations()))
                     .append("</td><td>").append(mi == null ? "" : escape(mi.value()))
                     .append("</td></tr>\n");
@@ -239,11 +243,11 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
     }
 
     /** Список классов документа, на которые ссылается данный класс. */
-    private void renderReferences(StringBuilder sb, Class<?> c) {
+    private void renderReferences(StringBuilder sb, ClassRenderRecord c, LinkedHashSet<ClassRenderRecord> cs) {
         Set<Class<?>> refs = new LinkedHashSet<Class<?>>();
-        for (Type t : referencedTypes(c)) {
+        for (Type t : c.referencedTypes()) {
             for (Class<?> r : classesOf(t)) {
-                if (r != c && documented.contains(r)) {
+                if (r != c.theClass() && cs.stream().anyMatch(e -> e.theClass().equals(r))) {
                     refs.add(r);
                 }
             }
@@ -262,28 +266,29 @@ public class StandardHTMLFactory extends AbstractHTMLFactory {
 
     // Вспомогательные
 
-    private String params(Type[] types) {
+    private String params(Type[] types, LinkedHashSet<ClassRenderRecord> documented) {
         if (types.length == 0) {
             return "<span class=\"meta\">()</span>";
         }
-        return typeList(types);
+        return typeList(types, documented);
     }
 
-    protected String typeList(Type[] types) {
+    protected String typeList(Type[] types, LinkedHashSet<ClassRenderRecord> documented) {
         List<String> parts = new ArrayList<String>();
         for (Type t : types) {
-            parts.add(typeHtml(t));
+            parts.add(typeHtml(t, documented));
         }
         return join(parts, ", ");
     }
 
     /** Имя типа с гиперссылками на документированные классы. */
-    protected String typeHtml(Type t) {
+    protected String typeHtml(Type t, LinkedHashSet<ClassRenderRecord> documented) {
         String text = escape(t.getTypeName());
 
         List<Class<?>> refs = new ArrayList<Class<?>>();
         for (Class<?> c : classesOf(t)) {
-            if (documented.contains(c)) {
+            if (documented.stream().anyMatch(e ->
+                    e.theClass() == c)) {
                 refs.add(c);
             }
         }
